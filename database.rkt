@@ -92,7 +92,7 @@ A function that takes:
 )
 
 #|
-A function 'replace-attr' that takes:
+A function 'replaceAttr' that takes:
   - x 
   - a list of attributes
 
@@ -101,7 +101,33 @@ A function 'replace-attr' that takes:
       in the tuple.
     - Otherwise, just ignore the tuple and return 'x'.
 |#
+(define (replaceAttr x al)
+    (lambda (tuple)
+        (if (contains x al #f)
+            (let ([xLoc (attIndex x al 0)]) xLoc
+                (list-ref tuple xLoc)
+            )
+            x
+         )
+     )
+)
 
+(define (contains target array init)
+  (if (empty? array)
+      init
+      (if (equal? target (first array))
+          #t
+          (contains target (rest array) #f)
+       )
+   )
+)
+
+(define (attIndex target la ind)
+    (if (equal? target (first la))
+        ind
+        (attIndex target (rest la) (+ 1 ind))
+    )    
+)
 
 ; Starter for Part 4; feel free to ignore!
 
@@ -205,3 +231,25 @@ A function 'replace-attr' that takes:
     )
 )
 (satisfyCond f3 Teaching) ;expect: '(("Name" "Course") ("David" "CSC324") ("David" "CSC343"))
+
+
+;------------------------ Testing replaceAttr ------------------------
+(write "Testing replaceAttr -----------")
+(write "Table1 ")
+(define fun1 (replaceAttr "City" (attributes table1)))
+(fun1 (fourth (tuples table1))) ;expect: "Milan"
+(define fun2 (replaceAttr "None" (attributes table1)))
+(fun2 (first (tuples table1))) ;expect: "None
+
+(write "Person ")
+(define fun3 (replaceAttr "Name" (attributes Person)))
+(fun3 (second (tuples Person))) ;expect: "Jen"
+(define fun4 (replaceAttr "Gender" (attributes Person)))
+(fun4 (first (tuples Person))) ;expect: "Gender"
+
+
+(write "Teaching ")
+(define fun5 (replaceAttr "Course" (attributes Teaching)))
+(fun5 (first (tuples Teaching))) ;expect: "CSC324"
+(define fun6 (replaceAttr "Age" (attributes Teaching)))
+(fun6 (first (tuples Teaching))) ;expect:"Age"
