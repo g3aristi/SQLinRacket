@@ -61,12 +61,14 @@ A function that takes:
 
   and returns the value of the tuple corresponding to that attribute.
 |#
-(define (get-value al a t)
+(define (getValue al a t)
   (if (equal? (first al) a)
         (first t)
-        (value (rest al) a (rest t)); else
+        (getValue (rest al) a (rest t)); else
    )
   )
+
+
 #|
 A function that takes:
   - f: a unary function that takes a tuple and returns a boolean value
@@ -75,6 +77,19 @@ A function that takes:
   and returns a new table containing only the tuples in 'table'
   that satisfy 'f'.
 |#
+(define (satisfyCond f table)
+  (satHelper f (rest table) (list(first table)) )
+  )
+
+(define (satHelper c t nt)
+  (if (empty? t)
+      nt
+      (if (c (first t))
+          (satHelper c (rest t)(append nt (list (first t))))
+          (satHelper c (rest t) nt)
+      )
+  )
+)
 
 #|
 A function 'replace-attr' that takes:
@@ -101,3 +116,92 @@ A function 'replace-attr' that takes:
     [(replace atom table)
      ; Change this!
      (void)]))
+
+
+
+;---------------------------Our Own Testing-------------------------------------------------
+
+;---------------------Prepared tables---------------------------
+(define table1
+  '(("Name" "Age" "City")
+  ("David" 20 "Prague") 
+  ("Jen" 30 "Toronto") 
+  ("Paul" 80 "MarsCity")
+  ("Carlo" 30 "Milan"))
+  )
+
+(define Person
+  '(("Name" "Age" "LikesChocolate")
+    ("David" 20 #t)
+    ("Jen" 30 #t) 
+    ("Paul" 100 #f)))
+
+(define Teaching
+    '(("Name" "Course")
+    ("David" "CSC324")
+    ("Jen" "CSC108")
+    ("David" "CSC343")
+    ))
+
+;------------------------ Testing Attributes----------------------
+(write "Testing attributes -----------")
+(write "Table1")
+(attributes table1) ;expect: '("Name" "Age" "City")
+(write "Person table")
+(attributes Person) ;expect: '("Name" "Age" "LikesChocolate")
+(write "Teaching table")
+(attributes Teaching) ;expect: '("Name" "Course")
+
+;------------------------ Testing Tuples ------------------------
+(write "Testing tuples -----------")
+(write "Table1 ")
+(tuples table1) ;expect: '(("David" 20 "Prague") ("Jen" 30 "Toronto") ("Paul" 80 "MarsCity") ("Carlo" 30 "Milan"))
+(write "Person ")
+(tuples Person) ;expect: '(("David" 20 #t) ("Jen" 30 #t) ("Paul" 100 #f))
+(write "Teaching ")
+(tuples Teaching) ;expect: '(("David" "CSC324") ("Jen" "CSC108") ("David" "CSC343"))
+
+;------------------------ Testing Size ------------------------
+(write "Testing size -----------")
+(write "Table1 ")
+(size table1) ;expect: 4
+(write "Person ")
+(size Person) ;expect: 3
+(write "Teaching ")
+(size Teaching) ;expect: 3
+
+;------------------------ Testing getValue ------------------------
+(write "Testing getValue -----------")
+(write "Table1 ")
+(getValue (attributes table1) "City" (fourth (tuples table1))) ;expect: "Milan"
+(write "Person ")
+(getValue (attributes Person) "Name" (first (tuples Person))) ;expect: "David"
+(write "Teaching ")
+(getValue (attributes Teaching) "Course" (first (tuples Teaching))) ;expect: "CSC324"
+
+;------------------------ Testing satisfyCond ------------------------
+(write "Testing satistfyCond -----------")
+(write "Table1 ")
+(define (f1 tuple)
+    (if (equal? (second tuple) 30)
+        #t
+        #f
+    )
+)
+(satisfyCond f1 table1) ;expect: '(("Name" "Age" "City") ("Jen" 30 "Toronto") ("Carlo" 30 "Milan"))
+(write "Person ")
+(define (f2 tuple)
+    (if (equal? (third tuple) #f)
+        #t
+        #f
+    )
+)
+(satisfyCond f2 Person) ;expect: '(("Name" "Age" "LikesChocolate") ("Paul" 100 #f))
+(write "Teaching ")
+(define (f3 tuple)
+    (if (equal? (first tuple) "David")
+        #t
+        #f
+    )
+)
+(satisfyCond f3 Teaching) ;expect: '(("Name" "Course") ("David" "CSC324") ("David" "CSC343"))
